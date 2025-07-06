@@ -6,28 +6,35 @@ public class RocketFlight : MonoBehaviour
     public float flightDuration = 3f; // Time to fly away and return
     public float flightDistance = 20f; // How far the rocket flies
 
-    private Vector3 startPosition;
+    private Vector3 launchOrigin;
     private Vector3 targetPosition;
     private float timer = 0f;
+    private bool inFlight = false;
     private bool returning = false;
     private Action onReturnCallback;
 
+    // Call this to launch the rocket
     public void Launch(Vector3 direction, Action onReturn)
     {
-        startPosition = transform.position;
-        targetPosition = startPosition + direction.normalized * flightDistance;
+        launchOrigin = transform.position;
+        targetPosition = launchOrigin + direction.normalized * flightDistance;
         timer = 0f;
+        inFlight = true;
         returning = false;
         onReturnCallback = onReturn;
     }
 
     void Update()
     {
+        if (!inFlight) return;
+
+        timer += Time.deltaTime;
+        float halfDuration = flightDuration / 2f;
+        float t = timer / halfDuration;
+
         if (!returning)
         {
-            timer += Time.deltaTime;
-            float t = timer / (flightDuration / 2f);
-            transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            transform.position = Vector3.Lerp(launchOrigin, targetPosition, t);
             if (t >= 1f)
             {
                 returning = true;
@@ -36,13 +43,14 @@ public class RocketFlight : MonoBehaviour
         }
         else
         {
-            timer += Time.deltaTime;
-            float t = timer / (flightDuration / 2f);
-            transform.position = Vector3.Lerp(targetPosition, startPosition, t);
+            transform.position = Vector3.Lerp(targetPosition, launchOrigin, t);
             if (t >= 1f)
             {
+                inFlight = false;
                 onReturnCallback?.Invoke();
-                Destroy(gameObject);
+                onReturnCallback = null;
+                // Reset to original position
+                transform.position = launchOrigin;
             }
         }
     }

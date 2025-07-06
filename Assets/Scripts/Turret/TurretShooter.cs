@@ -11,6 +11,13 @@ public class TurretShooter : MonoBehaviour
     private float timer = 0f;
     private bool isBursting = false;
     public GameObject interactionPrompt;
+    public GameObject smokeParticle;
+    public bool isBroken = false;
+
+    void Start()
+    {
+        if (smokeParticle != null) smokeParticle.SetActive(false);
+    }
 
     void OnTriggerEnter(Collider other)
     {
@@ -30,6 +37,7 @@ public class TurretShooter : MonoBehaviour
 
     void Update()
     {
+        if (isBroken) return;
         timer += Time.deltaTime;
         if (timer >= burstInterval && !isBursting)
         {
@@ -37,7 +45,7 @@ public class TurretShooter : MonoBehaviour
             timer = 0f;
         }
     }
-
+    
     IEnumerator BurstFire()
     {
         isBursting = true;
@@ -48,5 +56,19 @@ public class TurretShooter : MonoBehaviour
             yield return new WaitForSeconds(shotDelay);
         }
         isBursting = false;
+    }
+
+    public void BreakDown()
+    {
+        isBroken = true;
+        if (smokeParticle != null) smokeParticle.SetActive(true);
+        Debug.Log("TurretShooter damaged by asteroid!");
+    }
+
+    public void Repair()
+    {
+        isBroken = false;
+        if (smokeParticle != null) smokeParticle.SetActive(false);
+        Debug.Log("TurretShooter repaired!");
     }
 }

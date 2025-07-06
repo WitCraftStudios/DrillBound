@@ -78,6 +78,14 @@ public class AsteroidHazard : MonoBehaviour
             return;
         }
 
+        var turretShooter = other.GetComponent<TurretShooter>();
+        if (turretShooter != null)
+        {
+            turretShooter.BreakDown();
+            Destroy(gameObject);
+            return;
+        }
+
         // Add similar checks for RocketCapsule, RocketLaunchPlace, DefenseTurret, SleepPlace, etc.
     }
 
@@ -94,6 +102,9 @@ public class AsteroidHazard : MonoBehaviour
 
         var defenseTurret = FindFirstObjectByType<DefenseTurret>();
         if (defenseTurret != null) defenseTurret.BreakDown();
+
+        var turretShooter = FindFirstObjectByType<TurretShooter>();
+        if (turretShooter != null) turretShooter.BreakDown();
 
         var sleepPlace = FindFirstObjectByType<SleepPlace>();
         if (sleepPlace != null) sleepPlace.BreakDown();

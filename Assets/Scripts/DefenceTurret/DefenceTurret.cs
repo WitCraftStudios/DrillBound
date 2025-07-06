@@ -15,6 +15,7 @@ public class DefenseTurret : MonoBehaviour
     private bool isRepairing = false;
     private float repairTimer = 0f;
     public GameObject interactionPrompt;
+    public GameObject smokeParticle;
 
     void Update()
     {
@@ -27,11 +28,16 @@ public class DefenseTurret : MonoBehaviour
             repairCircle.fillAmount = repairTimer / repairTime;
         }
         if (isBroken) {
+            smokeParticle.SetActive(true);
             if (playerNearby && Keyboard.current.rKey.wasPressedThisFrame)
             {
                 Debug.Log("DefenseTurret is broken! Repair it first.");
             }
             return;
+        }
+        else if (!isBroken)
+        {
+            smokeParticle.SetActive(false);
         }
         if (playerNearby && Keyboard.current.eKey.wasPressedThisFrame)
         {

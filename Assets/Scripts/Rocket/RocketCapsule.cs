@@ -11,6 +11,7 @@ public class RocketCapsule : MonoBehaviour
     private bool isRepairing = false;
     private float repairTimer = 0f;
     public GameObject interactionPrompt;
+    public GameObject smokeParticle;
 
     void Update()
     {
@@ -21,6 +22,14 @@ public class RocketCapsule : MonoBehaviour
         if (isRepairing && repairCircle != null)
         {
             repairCircle.fillAmount = repairTimer / repairTime;
+        }
+        if (isBroken)
+        {
+            smokeParticle.SetActive(true);
+        }
+        else if (!isBroken)
+        {
+            smokeParticle.SetActive(false);
         }
         // No cooldown or currency logic here
     }

@@ -13,6 +13,7 @@ public class SleepPlace : MonoBehaviour, ISleepPlace
     private bool playerNearby = false;
     private bool isRepairing = false;
     private float repairTimer = 0f;
+    public GameObject smokeParticle;
 
     void Update()
     {
@@ -23,6 +24,14 @@ public class SleepPlace : MonoBehaviour, ISleepPlace
         if (isRepairing && repairCircle != null)
         {
             repairCircle.fillAmount = repairTimer / repairTime;
+        }
+        if (isBroken)
+        {
+            smokeParticle.SetActive(true);
+        }
+        else if (!isBroken)
+        {
+            smokeParticle.SetActive(false);
         }
     }
 
@@ -87,7 +96,7 @@ public class SleepPlace : MonoBehaviour, ISleepPlace
 
     public void BreakDown()
     {
-        isBroken = true;    
+        isBroken = true;
         Debug.Log("SleepPlace damaged by asteroid!");
         // Add additional damage logic here
     }

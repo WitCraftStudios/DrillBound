@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "DrillBound.sln"
+    "dotnet.defaultSolution": "DrillBound-main.sln"
 }

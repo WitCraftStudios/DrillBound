@@ -16,6 +16,15 @@ public class PetFollowAI : MonoBehaviour
     void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
+        agent.stoppingDistance = followDistance + 0.5f;
+        agent.updateRotation = true;
+        agent.autoBraking = true;
+        agent.radius = 0.4f;
+        agent.avoidancePriority = 50;
+        // Recommended for smoothness (can also set in Inspector):
+        // agent.acceleration = 16;
+        // agent.angularSpeed = 360;
+        // agent.speed = 3.5f;
     }
 
     void Start()
@@ -28,22 +37,30 @@ public class PetFollowAI : MonoBehaviour
     {
         if (player == null) return;
 
+        // Ensure pet stays on NavMesh
+        NavMeshHit hit;
+        float maxDistance = 2.0f; // How far to search for a valid NavMesh position
+        if (!NavMesh.SamplePosition(transform.position, out hit, maxDistance, NavMesh.AllAreas))
+        {
+            // Not on NavMesh, try to warp to nearest valid position
+            if (NavMesh.SamplePosition(transform.position, out hit, 10.0f, NavMesh.AllAreas))
+            {
+                agent.Warp(hit.position);
+            }
+            // else: could not find a valid NavMesh position nearby
+        }
+
         float distance = Vector3.Distance(transform.position, player.position);
 
-        if (distance > followDistance)
+        // Always set destination if farther than stopping distance
+        if (distance > agent.stoppingDistance)
         {
-            if (!agent.hasPath || agent.destination != player.position)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(player.position);
-            }
+            agent.isStopped = false;
+            agent.SetDestination(player.position);
         }
         else
         {
-            if (!agent.isStopped)
-            {
-                agent.isStopped = true;
-            }
+            agent.isStopped = true;
         }
     }
 

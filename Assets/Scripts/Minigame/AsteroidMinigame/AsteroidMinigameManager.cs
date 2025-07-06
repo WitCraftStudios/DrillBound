@@ -15,6 +15,8 @@ public class AsteroidMinigameManager : MonoBehaviour
     public int maxAsteroids = 30;
     public AsteroidHazardManager hazardManager; // Assign in inspector
     public float minigameDuration = 10f; // seconds
+    [Header("UI References")]
+    public GameObject uiRoot; // Assign your main UI GameObject in the Inspector
 
     private List<GameObject> spawnedAsteroids = new List<GameObject>();
     private bool minigameActive = false;
@@ -27,6 +29,7 @@ public class AsteroidMinigameManager : MonoBehaviour
     void OnEnable()
     {
         Cursor.visible = false;
+        if (uiRoot != null) uiRoot.SetActive(false);
         StartMinigame();
     }
 
@@ -122,6 +125,7 @@ public class AsteroidMinigameManager : MonoBehaviour
         // Hide the minigame panel
         gameObject.SetActive(false);
         if (hazardManager != null) hazardManager.ResumeHazard();
+        if (uiRoot != null) uiRoot.SetActive(true);
         // Optionally, notify the hazard manager or resume the main game here
         Debug.Log("Minigame complete!");
     }

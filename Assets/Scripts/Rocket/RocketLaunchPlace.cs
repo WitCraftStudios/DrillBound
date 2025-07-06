@@ -6,7 +6,7 @@ using System.Collections;
 public class RocketLaunchPlace : MonoBehaviour
 {
     [Header("Rocket Launch Settings")]
-    public GameObject rocketPrefab;      // Assign your rocket prefab in the inspector
+    public RocketFlight sceneRocket;     // Assign your rocket in the scene
     public Transform launchPoint;        // Assign a child transform as the launch position
 
     [Header("Gameplay Settings")]
@@ -16,6 +16,7 @@ public class RocketLaunchPlace : MonoBehaviour
     public bool isBroken = false;
     public float repairTime = 10f;
     public Image repairCircle; // Assign in Inspector
+    public GameObject smokeParticle;
     private bool playerNearby = false;
     private bool isRepairing = false;
     private float repairTimer = 0f;
@@ -45,7 +46,14 @@ public class RocketLaunchPlace : MonoBehaviour
         {
             repairCircle.fillAmount = repairTimer / repairTime;
         }
-
+        if (isBroken)
+        {
+            smokeParticle.SetActive(true);
+        }
+        else if (!isBroken)
+        {
+            smokeParticle.SetActive(false);
+        }
         // Handle launch input
         if (playerNearby && Keyboard.current.eKey.wasPressedThisFrame)
         {
@@ -130,31 +138,39 @@ public class RocketLaunchPlace : MonoBehaviour
         // Remove batteries, but don't give reward yet
         pendingBatteries = playerInventory.DeliverAllBatteries();
 
-        // Spawn and launch the rocket
-        GameObject rocketObj = Instantiate(rocketPrefab, launchPoint.position, launchPoint.rotation);
-        RocketFlight flight = rocketObj.GetComponent<RocketFlight>();
+        // Use the rocket already in the scene
+        if (sceneRocket == null)
+        {
+            Debug.LogError("No scene rocket assigned!");
+            return;
+        }
+        // Reset rocket position and rotation to launch point
+        sceneRocket.transform.position = launchPoint.position;
+        sceneRocket.transform.rotation = launchPoint.rotation;
         rocketInFlight = true;
         cooldownTimer = cooldownTime;
-
-        // Launch upward (or use your desired direction)
-        flight.Launch(launchPoint.up, OnRocketReturn);
-
-        // Store the player inventory reference for rocket return
+        sceneRocket.gameObject.SetActive(true); // In case it was disabled
+        sceneRocket.Launch(launchPoint.up, OnRocketReturn);
         storedPlayerInventory = playerInventory;
-
         Debug.Log("Rocket launched to HQ!");
     }
 
     void OnRocketReturn()
     {
-        if (storedPlayerInventory != null)
+        PlayerInventory inventory = storedPlayerInventory;
+        if (inventory == null)
         {
-            storedPlayerInventory.AddOxygenCylinders(1);
+            // Try to find the player in the scene
+            inventory = FindFirstObjectByType<PlayerInventory>();
+        }
+        if (inventory != null)
+        {
+            inventory.AddOxygenCylinders(1);
             Debug.Log("Rocket returned! Delivered " + pendingBatteries + " batteries to HQ! Received 1 oxygen cylinder.");
         }
         else
         {
-            Debug.Log("Rocket returned, but no stored player inventory found to grant reward.");
+            Debug.Log("Rocket returned, but no player inventory found to grant reward.");
         }
         rocketInFlight = false;
         pendingBatteries = 0;

@@ -8,6 +8,7 @@ public class Driller : MonoBehaviour
     public bool isBroken = false;
     public float repairTime = 10f;
     public Image repairCircle; // Assign in Inspector
+    public GameObject smokeParticle;
 
     [Header("Mining Settings")]
     public float miningInterval = 5f; // Time in seconds to mine one battery
@@ -15,7 +16,8 @@ public class Driller : MonoBehaviour
 
     [Header("Battery Settings")]
     public GameObject batteryPrefab; // Assign your Battery prefab in the Inspector
-    public Transform spawnPoint;     // Where the battery will appear (can be the driller's position)
+    public Transform[] spawnPoints;  // Assign 5 spawn points in the Inspector
+    private int batteriesSpawned = 0;
 
     private bool playerNearby = false;
     private bool isRepairing = false;
@@ -31,7 +33,14 @@ public class Driller : MonoBehaviour
         {
             repairCircle.fillAmount = repairTimer / repairTime;
         }
-        if (isBroken) return;
+        if (isBroken)
+        {
+            smokeParticle.SetActive(true);
+        }
+        else if (!isBroken)
+        {
+            smokeParticle.SetActive(false);
+        }
 
         if (isRunning && batteryPrefab != null)
         {
@@ -74,9 +83,23 @@ public class Driller : MonoBehaviour
             Debug.Log("Driller is broken! Repair it first.");
             return;
         }
-        Vector3 spawnPos = spawnPoint != null ? spawnPoint.position : transform.position + Vector3.up;
+        // Only allow up to 5 batteries in the scene
+        int existingBatteries = FindObjectsByType<BatteryPickup>(FindObjectsSortMode.None).Length;
+        if (existingBatteries >= 5 || batteriesSpawned >= 5)
+        {
+            Debug.Log("Battery limit reached. Driller will stop until restarted.");
+            isRunning = false;
+            return;
+        }
+        // Find the next available spawn point
+        int spawnIndex = batteriesSpawned % spawnPoints.Length;
+        Transform chosenSpawn = (spawnPoints != null && spawnPoints.Length > 0 && spawnPoints[spawnIndex] != null)
+            ? spawnPoints[spawnIndex]
+            : transform;
+        Vector3 spawnPos = chosenSpawn.position;
         Instantiate(batteryPrefab, spawnPos, Quaternion.identity);
-        Debug.Log("Battery mined!");
+        batteriesSpawned++;
+        Debug.Log($"Battery mined at spawn point {spawnIndex + 1}!");
     }
 
     public void StartDriller()
@@ -87,6 +110,7 @@ public class Driller : MonoBehaviour
         }
         if (!isRunning && !isBroken)
         {
+            batteriesSpawned = 0; // Reset count on manual restart
             isRunning = true;
             Debug.Log("Driller started!");
         }
